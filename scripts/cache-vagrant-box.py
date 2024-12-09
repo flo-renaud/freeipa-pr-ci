@@ -10,6 +10,7 @@ import sys
 
 import requests
 from requests.exceptions import RequestException
+from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -65,23 +66,15 @@ def download_box(user_name, box_name, box_version):
         logger.error(f'Provider "libvirt" not available.')
         return 1
 
+    path = urlparse(provider['url']).path
+    
     temp_box_path = os.path.join(
         '/tmp/temp_boxes',
-        BOX_PATH_PATTERN.format(
-            user_name=user_name,
-            box_name=box_name,
-            box_version=box_version,
-            provider_name='libvirt',
-        ),
+        path
     )
     final_box_path = os.path.join(
         CATALOG_PATH,
-        BOX_PATH_PATTERN.format(
-            user_name=user_name,
-            box_name=box_name,
-            box_version=box_version,
-            provider_name='libvirt',
-        ),
+        path
     )
 
     logger.info(f'Downloading box to "{temp_box_path}".')
