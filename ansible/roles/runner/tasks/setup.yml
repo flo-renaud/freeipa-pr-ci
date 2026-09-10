@@ -28,7 +28,7 @@
 
 # Use Hashicorp Vagrant (mostly will be newer than Fedora's)
 - name: enable Hashicorp repo
-  shell: "dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo"
+  shell: "dnf config-manager addrepo --from-repofile=https://rpm.releases.hashicorp.com/fedora/hashicorp.repo"
 
 - name: install runner dependencies
   dnf:
@@ -58,6 +58,7 @@
       - python3-dnf
       - redhat-rpm-config
       - crontabs
+      - wget
   notify:
     - restart_nfs
 
@@ -116,12 +117,20 @@
     regexp: '^#?SystemMaxUse'
     line: 'SystemMaxUse={{ limit_size_systemd_journal }}'
     state: present
+    create: true
 
-- name: Enable DNSSEC in /etc/systemd/resolved.conf
+- name: Create resolved.conf.d drop-in directory
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Enable DNSSEC in /etc/systemd/resolved.conf.d/prci.conf
   lineinfile:
-    path: /etc/systemd/resolved.conf
+    path: /etc/systemd/resolved.conf.d/prci.conf
     regexp: '^#?DNSSEC='
     line: 'DNSSEC=yes'
+    create: true
 
 - name: Restart systemd-resolved service to reflect configuration changes
   systemd:
